@@ -1,0 +1,29 @@
+# OASIS_START
+# DO NOT EDIT (digest: c0ca05f5a0af119be2d4ef3e36ca994d)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library neolib
+"src/neolib.cmxs": use_neolib
+<src/*.ml{,i}>: pkg_netclient
+<src/*.ml{,i}>: pkg_yojson
+# Executable test-tree
+"tests/tree.byte": pkg_calendar
+"tests/tree.byte": pkg_netclient
+"tests/tree.byte": pkg_yojson
+"tests/tree.byte": use_neolib
+<tests/*.ml{,i}>: pkg_calendar
+<tests/*.ml{,i}>: pkg_netclient
+<tests/*.ml{,i}>: pkg_yojson
+<tests/*.ml{,i}>: use_neolib
+# OASIS_STOP

@@ -1,0 +1,25 @@
+OASISFormat: 0.4
+Name:        neolib
+Version:     0.1
+Synopsis:    API to access Neo4j database
+Authors:     Kakadu
+License:     LGPL-3.0 with OCaml linking exception
+Plugins:     META (0.4), StdFiles (0.4), DevFiles (0.4)
+
+Library neolib
+  BuildTools:   ocamlbuild
+  BuildDepends: netclient,yojson
+  Path:         src
+  Modules:      Neorest,Helpers,Result
+
+Executable "test-tree"
+  Path:           tests
+  BuildTools:     ocamlbuild
+  BuildDepends:   neolib,calendar
+  CompiledObject: byte
+  MainIs:         tree.ml
+
+Test "test-tree"
+  Command: ./tree.byte
+  Run:     true
+

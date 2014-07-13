@@ -1,0 +1,6 @@
+PKG yojson
+PKG netclient
+PKG calendar
+
+SRC src
+B _build/src
