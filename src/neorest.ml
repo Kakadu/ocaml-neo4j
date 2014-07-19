@@ -29,9 +29,9 @@ let make_empty_node () : (_,_) Result.t =
   let node_properties : (string*string) list = [] in
   let s = (http_post_message url node_properties)#get_resp_body () in
   (match to_json s with
-  | `Assoc xs -> `OK (List.Assoc.find_exn xs "self")
-  | _ -> `Error ()) >>= fun url ->
-   `OK (int_of_string @@ String.rsplit (Yojson.to_string url) ~by:'/'  )
+  | `Assoc xs -> OK (List.Assoc.find_exn xs "self")
+  | _ -> Error ()) >>= fun url ->
+   OK (int_of_string @@ String.rsplit (Yojson.to_string url) ~by:'/'  )
 
 
 
@@ -116,8 +116,8 @@ let remove_all () : (_,_) Result.t =
   let j2 = to_json @@ post_cypher "START r=rel(*)  DELETE r;" in
   let j1 = to_json @@ post_cypher "START n=node(*) DELETE n;" in
   if good_r = j1 && good_r = j2
-  then `OK ()
-  else `Error ()
+  then OK ()
+  else Error ()
 
 let insert_node_between id1  =
   let cmd = sprintf
@@ -176,8 +176,8 @@ let get_start_day () =
   let ans = post_cypher (*~params:["first_id", `Int start_node_id]*) cmd in
   (*print_endline ans;*)
   match to_json ans with
-  | `Assoc [_; ("data",`List [`List [`Assoc xs]])] -> `OK (new date_of_json xs)
-  |  _ -> `Error "JSON match failure"
+  | `Assoc [_; ("data",`List [`List [`Assoc xs]])] -> OK (new date_of_json xs)
+  |  _ -> Error "JSON match failure"
  *)
 let get_questions nodeid =
   let cmd = sprintf "START x=node(%d)
@@ -185,15 +185,15 @@ let get_questions nodeid =
   let j = to_json @@ post_cypher cmd |> YoUtil.drop_assoc |> List.assoc "data" in
   print_endline @@ Yojson.to_string j;
   match j with
-  | `List[`List ys ] -> `OK (List.map (fun y -> new question_of_json (YoUtil.drop_assoc y)) ys)
-  | _ -> `Error "JSON match failure"
+  | `List[`List ys ] -> OK (List.map (fun y -> new question_of_json (YoUtil.drop_assoc y)) ys)
+  | _ -> Error "JSON match failure"
 
 let get_next_timeline_node nodeid =
   let cmd = sprintf "START x=node(%d)
                      MATCH x-[:FOLLOWED_BY]->y RETURN y" nodeid in
   match to_json @@ post_cypher cmd |> YoUtil.drop_assoc |> List.assoc "data" with
-  | `List[`List[`Assoc xs]] -> `OK (new node_of_json xs)
-  | _ -> `Error "JSON match failure"
+  | `List[`List[`Assoc xs]] -> OK (new node_of_json xs)
+  | _ -> Error "JSON match failure"
 
 let id_from_node_json ej =
   match List.Assoc.find_exn ej "self" with
