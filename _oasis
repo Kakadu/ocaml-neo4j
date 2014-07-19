@@ -12,14 +12,11 @@ Library neolib
   Path:         src
   Modules:      Neorest,Helpers,Result
 
-Executable "test-tree"
+Executable "demo-tree"
   Path:           tests
   BuildTools:     ocamlbuild
   BuildDepends:   neolib,calendar
   CompiledObject: byte
   MainIs:         tree.ml
 
-Test "test-tree"
-  Command: ./tree.byte
-  Run:     true
 

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: c0ca05f5a0af119be2d4ef3e36ca994d)
+# DO NOT EDIT (digest: e469dead43049649880d3cd759d788a9)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -17,7 +17,7 @@
 "src/neolib.cmxs": use_neolib
 <src/*.ml{,i}>: pkg_netclient
 <src/*.ml{,i}>: pkg_yojson
-# Executable test-tree
+# Executable demo-tree
 "tests/tree.byte": pkg_calendar
 "tests/tree.byte": pkg_netclient
 "tests/tree.byte": pkg_yojson
