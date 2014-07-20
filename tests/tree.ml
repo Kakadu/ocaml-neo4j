@@ -50,31 +50,28 @@ let make_nodes events =
     | Error () -> fprintf stderr "Can't connect to database"; exit 1
   in
   let f = fun {event_desc; when_} ->
+
+
+
+
+
     (* Add year *)
     let y = Calendar.year when_ in
-    let p1 = ["y", `Int y] in
-    let _ = API.post_cypher "merge (:YEAR{year: {y}})" ~params:p1 in
-    (* add month *)
     let m = Calendar.month when_ |> Date.int_of_month in
-    let p2 = ("m",`Int m) :: p1 in
-    let _ = API.post_cypher "MATCH (y:YEAR{year: {y}})
-                             CREATE UNIQUE y-[:HAS_MONTH]->(:MONTH{month: {m}})"
-                            ~params:p2
-    in
-    (* add day *)
     let d = Calendar.day_of_month when_ in
+
+    let p1 = ["y", `Int y] in
+    let p2 = ("m",`Int m) :: p1 in
     let p3 = ("d",`Int d) :: p2 in
-    let _ = API.post_cypher "MATCH (y:YEAR{ year: {y} }), (m:MONTH{month: {m}})
-                             CREATE UNIQUE y-[:HAS_MONTH]->m-[:HAS_DAY]->(d:DAY{day: {d}})"
-                            ~params:p3
-    in
-    print_endline "==============================";
-    (* add event *)
-    let p4 = ("desc",`String (Printer.CalendarPrinter.to_string when_) ) :: p3 in
-    let _ = API.post_cypher "MATCH (y:YEAR{ year: {y} }), (m:MONTH{month: {m}}), (d:DAY{day: {d}})
-                             CREATE UNIQUE y-[:HAS_MONTH]->m-[:HAS_DAY]->d-[:HAS_EVENT]->(:EVENT{desc: {desc} })"
-                            ~params:p4
-    in
+    let p4 = ("desc",`String (sprintf "%s\\n%s" event_desc (Printer.CalendarPrinter.to_string when_) )) :: p3 in
+
+    let _ = API.post_cypher "MERGE (y:YEAR{year: {y} })
+                             CREATE UNIQUE y-[:HAS_MONTH]->(m:MONTH{month:{m}    })
+                             CREATE UNIQUE m-[:HAS_DAY]->  (d:DAY  {day:  {d}    })
+                             CREATE UNIQUE d-[:HAS_EVENT]->(e:EVENT{desc: {desc} })
+                             WITH y AS y
+                             MATCH n RETURN n
+                             " ~params:p4 in
     let _ = next_year y
       >>= function
         | Some next -> printf "There is next year %d\n%!" next; connect_years y next
@@ -85,6 +82,7 @@ let make_nodes events =
               | Some prev -> printf "There is prev year %d\n%!" prev; connect_years prev y
               | None -> OK ()
     in
+
     ()
   in
   List.iter events ~f
@@ -94,6 +92,8 @@ let events =
   [ { event_desc="event1"; when_ = make 2009 08 23 15 32 43 }
   ; { event_desc="event2"; when_ = make 2012 10 21 12 13 14 }
   ; { event_desc="event3"; when_ = make 2009 09 22 15 32 43 }
+  ; { event_desc="event3"; when_ = make 2009 09 23 15 32 43 }
+  ; { event_desc="event3"; when_ = make 2009 09 23 16 11 04 }
   ;
   ]
 

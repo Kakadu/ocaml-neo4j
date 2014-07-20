@@ -12,11 +12,18 @@ Library neolib
   Path:         src
   Modules:      Neorest,Helpers,Result
 
-Executable "demo-tree"
+Executable demo1
   Path:           tests
   BuildTools:     ocamlbuild
   BuildDepends:   neolib,calendar
   CompiledObject: byte
   MainIs:         tree.ml
+
+Executable demo2
+  Path:           tests
+  BuildTools:     ocamlbuild
+  BuildDepends:   neolib,calendar
+  CompiledObject: byte
+  MainIs:         demo2.ml
 
 

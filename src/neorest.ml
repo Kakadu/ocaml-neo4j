@@ -110,14 +110,18 @@ let post_cypher ?(params=[]) cypher =
   pipeline#run ();
   req#get_resp_body ()
 
+let wrap_cypher ?(verbose=true) cmd ~params ~f =
+  let (ans: string) = post_cypher ~params cmd in
+  if verbose then print_endline ans;
+  ans |> to_json |> YoUtil.drop_assoc |> List.assoc "data" |> f
+
 
 let remove_all () : (_,_) Result.t =
-  let good_r = `Assoc [("columns", `List []); ("data", `List [])] in
-  let j2 = to_json @@ post_cypher "START r=rel(*)  DELETE r;" in
-  let j1 = to_json @@ post_cypher "START n=node(*) DELETE n;" in
-  if good_r = j1 && good_r = j2
-  then OK ()
-  else Error ()
+  wrap_cypher ~verbose:false ~params:[] ~f:(fun _ -> () )
+     "START r=rel(*)  DELETE r;";
+  wrap_cypher ~verbose:false ~params:[] ~f:(fun _ -> () )
+     "START n=node(*) DELETE n;";
+  OK ()
 
 let insert_node_between id1  =
   let cmd = sprintf
