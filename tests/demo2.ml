@@ -13,7 +13,10 @@ open Printf
  *
  *)
 
-type 'a event = { event_desc: 'a; when_: Calendar.t }
+type 'a event =
+    { event_desc: 'a; when_: Calendar.t; event_title: string
+    ; event_url: string
+    }
 
 module API = Neorest.Make(struct let server="localhost" let port=7474 end)
 
@@ -121,7 +124,7 @@ let make_nodes events =
         OK id
     in
 
-    let _ : (_,_) result = day_node_id >>= fun day_node_id ->
+    let (_ : (_,_) result) = day_node_id >>= fun day_node_id ->
       create_event ~parentid:day_node_id event_desc >>= fun _ ->
       OK ()
     in
@@ -130,13 +133,103 @@ let make_nodes events =
   List.iter events ~f
 
 let events =
+  (* TODO maybe add variable with level of fakeness *)
   let open Calendar in
-  [ { event_desc="event1"; when_ = make 2009 08 23 15 32 43 }
-  ; { event_desc="event2"; when_ = make 2009 09 22 15 32 43 }
-  ; { event_desc="event3"; when_ = make 2009 09 23 15 32 43 }
-  ; { event_desc="event4"; when_ = make 2009 09 23 16 11 04 }
-  ; { event_desc="event5"; when_ = make 2012 10 21 12 13 14 }
+  [ { when_ = make 2014 07 17 19 02 00
+    ; event_title="Ukraine relocates SA-17 Grizzly to Ukrainian-Russian border"
+    ; event_desc=""
+    ; event_url ="http://anti-maidan.com/index.php?p=news&id=3957"
+    }
+  ; { when_ = make 2014 07 17 20 00 00
+    ; event_title="Boeing 777 of Malaisia airlaines crashes near Ukrainian-Russian border"
+    ; event_desc=""
+    ; event_url= "" }
+  ; { when_ = make 2014 07 17 22 00 00
+    ; event_title="Mass-Media: The real target of Ukranian missle was V.Putin's airplane"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=3965" }
+  ; { when_ = make 2014 07 17 22 19 00
+    ; event_title="Flight recorders are found on planecrash area"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=3966" }
+  ; { when_ = make 2014 07 17 22 51 00
+    ; event_title="Flightradar24: before its dissappearing Boeing was located near city of Kremenchug"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=3968" }
+  ; { when_ = make 2014 07 17 23 20 00
+    ; event_title="CNN: Are separatists able to destrot Boeing?"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=3967" }
+  ; { when_ = make 2014 07 18 00 13 00
+    ; event_title="V.Putin accuses Ukraine in Boeing catastophe"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=3971" }
+  ; { when_ = make 2014 07 18 00 25 00
+    ; event_title="Donetsk People's Republic is concluding local armistice near plane's crash area"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=3973" }
+  ; { when_ = make 2014 07 18 01 14 00
+    ; event_title="Spanish dispatcher have seen Ukrainian Air Forces near crashed Boeing"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=3976" }
+  ; { when_ = make 2014 07 18 08 15 00
+    ; event_title="OSCE is calling to seal off zone of aircrash"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=3994" }
+  ; { when_ = make 2014 07 18 14 14 00
+    ; event_title="DNR: Kiev's attempts to claim us in Boeing catastrophe are awkward"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=3988" }
+  ; { when_ = make 2014 07 18 20 37 00
+    ; event_title="OSCE wathers have got limited access to the area of aircrash"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=4009" }
+  ; { when_ = make 2014 07 18 21 48 00
+    ; event_title="John Kirby: The Pentagon doesn't know who have destroyed the Boeing MH17"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=4011" }
+  ; { when_ = make 2014 07 18 21 55 00
+    ; event_title="Journalist: Boeing was flying at 480 km to north comparately to normal route"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=4013" }
+  ; { when_ = make 2014 07 19 04 43 00
+    ; event_title="Karakas: The catastrophe of Boeing is result of actions of USA"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=4025" }
+  ; { when_ = make 2014 07 19 06 38 00
+    ; event_title="S.Lavrov: Russia will not decypher 'black boxes' on its own territory"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=4028" }
+  ; { when_ = make 2014 07 19 07 10 00
+    ; event_title="China and Argentina call to objective investigation of aircrash"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=4030" }
+  ; { when_ = make 2014 07 19 23 27 00
+    ; event_title="Ministry of Defense of Russian asks 10 questions about Boeing to Kiev"
+    ; event_desc=""
+    ; event_url= "http://anti-maidan.com/index.php?p=news&id=4038" }
+  ; { when_ = make 2014 07 19 20 00 00
+    ; event_title=""
+    ; event_desc=""
+    ; event_url= "" }
+  ; { when_ = make 2014 07 19 20 00 00
+    ; event_title=""
+    ; event_desc=""
+    ; event_url= "" }
   ;
+
+
+
+    { event_desc="event1"; when_ = make 2009 08 23 15 32 43
+    ; event_title=""; event_url= "" }
+  ; { event_desc="event2"; when_ = make 2009 09 22 15 32 43
+    ; event_title=""; event_url= "" }
+  ; { event_desc="event3"; when_ = make 2009 09 23 15 32 43
+    ; event_title=""; event_url= "" }
+  ; { event_desc="event4"; when_ = make 2009 09 23 16 11 04
+    ; event_title=""; event_url= "" }
+  ; { event_desc="event5"; when_ = make 2012 10 21 12 13 14
+    ; event_title=""; event_url= "" }
   ]
 
 let () =
