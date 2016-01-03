@@ -8,7 +8,9 @@ Plugins:     META (0.4), StdFiles (0.4), DevFiles (0.4)
 
 Library neolib
   BuildTools:   ocamlbuild
-  BuildDepends: netclient,yojson
+  BuildDepends:
+    netclient (>= 4.0.0),
+    yojson
   Path:         src
   Modules:      Neorest,Helpers,Result
 

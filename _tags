@@ -1,8 +1,9 @@
 # OASIS_START
-# DO NOT EDIT (digest: 78d95f26c16df6d019fe2529b7ed63d7)
+# DO NOT EDIT (digest: 42d60aea5aeb3f18c7baa9943ffbb3ef)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
+true: annot, bin_annot
 <**/.svn>: -traverse
 <**/.svn>: not_hygienic
 ".bzr": -traverse
@@ -15,8 +16,8 @@
 "_darcs": not_hygienic
 # Library neolib
 "src/neolib.cmxs": use_neolib
-<src/*.ml{,i}>: pkg_netclient
-<src/*.ml{,i}>: pkg_yojson
+<src/*.ml{,i,y}>: pkg_netclient
+<src/*.ml{,i,y}>: pkg_yojson
 # Executable demo1
 "tests/tree.byte": pkg_calendar
 "tests/tree.byte": pkg_netclient
@@ -27,8 +28,8 @@
 "tests/demo2.byte": pkg_netclient
 "tests/demo2.byte": pkg_yojson
 "tests/demo2.byte": use_neolib
-<tests/*.ml{,i}>: pkg_calendar
-<tests/*.ml{,i}>: pkg_netclient
-<tests/*.ml{,i}>: pkg_yojson
-<tests/*.ml{,i}>: use_neolib
+<tests/*.ml{,i,y}>: pkg_calendar
+<tests/*.ml{,i,y}>: pkg_netclient
+<tests/*.ml{,i,y}>: pkg_yojson
+<tests/*.ml{,i,y}>: use_neolib
 # OASIS_STOP
