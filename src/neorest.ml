@@ -13,6 +13,8 @@ let print_json = Yojson.pretty_to_channel stdout
 module YoUtil = struct
   let drop_assoc = function `Assoc xs -> xs | _ -> failwith "Bad argument"
   let drop_string = function `String s -> s | _ -> failwith "Bad argument"
+  let drop_int = function `Int n -> n | _ -> failwith "Bad argument"
+  let drop_list = function `List xs -> xs | _ -> failwith "Bad argument"
   let unwrap_res x = x |> drop_assoc |> List.assoc "data"
 end
 
@@ -69,6 +71,93 @@ let add_label id label =
 type cypher_msg = string
 let string_of_cypher_msg (x:cypher_msg) = x
 
+type transaction = int
+
+let make_index ?(verbose=false) ~config name =
+  (* creates index for nodes http://jexp.de/blog/2014/03/full-text-indexing-fts-in-neo4j-2-0/  *)
+  let url = sprintf "http://%s:%d/db/data/index/node" Cfg.server Cfg.port in
+  let config' = [ "type", `String "fulltext"; "provider", `String "lucene" ] in
+  let args = `Assoc [ "name", `String name; "config", `Assoc (config @ config') ] in
+  let pipeline = new Http_client.pipeline in
+
+  let data = Yojson.to_string args in
+  if verbose then (print_endline url; print_endline data);
+  let req = new Http_client.post_raw url data in
+  req#set_req_header "Accept"       "application/json; charset=UTF8";
+  req#set_req_header "Content-type" "application/json";
+  pipeline#add_with_callback req @@
+    (fun call -> match call#response_status with
+                 | `Ok -> ()
+                 | `Bad_request ->
+                    print_endline call#response_body#value;
+                    let j = to_json call#response_body#value in
+                    j |> YoUtil.drop_assoc |> List.assoc "message"
+                      |> YoUtil.drop_string |> print_endline;
+                 | _ ->
+                    print_endline call#response_status_text;
+                    print_endline call#response_body#value;
+                    (*print_endline "callback";*)
+                    ()
+    );
+  pipeline#run ();
+  let (ans: string) = req#get_resp_body () in
+  if verbose then print_endline ans;
+  ()
+
+
+let make_n_commit ?(verbose=false) cmd ~params =
+  let url = sprintf "http://%s:%d/db/data/transaction/commit" Cfg.server Cfg.port in
+  let args = `Assoc
+    ["statements", `List
+                    [ `Assoc [ ("statement", `String cmd)
+                             ; "parameters", `Assoc params
+                             ]
+                    ]
+    ]
+  in
+  if verbose then begin
+    print_endline @@ Str.global_replace (Str.regexp "\n") " " cmd;
+    print_endline @@ Str.global_replace (Str.regexp "\n") " " @@ Yojson.to_string (`Assoc params);
+  end;
+  let req = new Http_client.post_raw url (Yojson.to_string args) in
+  req#set_req_header "Accept"       "application/json; charset=UTF8";
+  req#set_req_header "Content-type" "application/json";
+  let pipeline = new Http_client.pipeline in
+  pipeline#add_with_callback req @@
+    (fun call -> match call#response_status with
+                 | `Ok -> ()
+                 | `Bad_request ->
+                    let j = to_json call#response_body#value in
+                    j |> YoUtil.drop_assoc |> List.assoc "message"
+                      |> YoUtil.drop_string |> print_endline;
+                 | _ ->
+                    print_endline call#response_status_text;
+                    print_endline call#response_body#value;
+                    print_endline "callback"
+
+    );
+  pipeline#run ();
+  req#get_resp_body ()
+
+let commit ?(verbose=true) cmd ~params =
+  let s = make_n_commit ~verbose cmd ~params in
+  if verbose then print_endline s;
+  let j1 = to_json s in
+  try
+    let open YoUtil in
+    (* TODO: get error message from JSON
+     {"results":[],
+      "errors":[{"code":"Neo.ClientError.Statement.InvalidSyntax",
+                 "message":"i1 not defined (line 6, column 33)\n\"             RETURN {conflicts: i1, conforms: i2 }\"\n                                 ^"}]}
+     *)
+    let j2 = j1 |> drop_assoc |> List.assoc "results" |> drop_list |> List.hd
+                |> drop_assoc  |> List.assoc "data" |> drop_list in
+    List.map j2 ~f:(fun x -> x |> drop_assoc |> List.assoc "row" |> drop_list |> List.hd)
+  with exn -> print_endline s;
+              failwith "Some error or wrong cypher result format in Neorest.commit"
+
+
+
 let post_cypher ?(params=[]) cypher =
   let url = sprintf "http://%s:%d/db/data/cypher" Cfg.server Cfg.port in
   let pipeline = new Http_client.pipeline in
@@ -117,10 +206,10 @@ let wrap_cypher ?(verbose=true) cmd ~params ~f =
   ans |> to_json |> YoUtil.drop_assoc |> List.assoc "data" |> f
 
 
-let remove_all () : (_,_) Result.t =
-  wrap_cypher ~verbose:false ~params:[] ~f:(fun _ -> () )
+let remove_all ?(verbose=false) () : (_,_) Result.t =
+  wrap_cypher ~verbose ~params:[] ~f:(fun _ -> () )
      "START r=rel(*)  DELETE r;";
-  wrap_cypher ~verbose:false ~params:[] ~f:(fun _ -> () )
+  wrap_cypher ~verbose ~params:[] ~f:(fun _ -> () )
      "START n=node(*) DELETE n;";
   OK ()
 
