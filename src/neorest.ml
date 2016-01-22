@@ -1,5 +1,6 @@
 open Printf
 open Helpers
+module Http_client = Nethttp_client
 open Http_client.Convenience
 open Result
 module Yojson = Yojson.Safe
