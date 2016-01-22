@@ -1,8 +1,0 @@
-(* OASIS_START *)
-(* DO NOT EDIT (digest: cc311abc96dbe28a0a326d0c93b3fc66) *)
-
-Authors of neolib:
-
-* Kakadu
-
-(* OASIS_STOP *)
